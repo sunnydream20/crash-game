@@ -1,0 +1,80 @@
+.ant-select-selector {
+    border-radius: 20px !important;
+}
+
+.react-international-phone-input {
+    width: 100% !important;
+}
+
+.react-international-phone-country-selector-button {
+    height: 46px;
+    padding: 14px;
+    border-radius: 20px 0px 0px 20px !important;
+}
+
+.react-international-phone-input {
+    height: 46px !important;
+    border-radius: 0px 20px 20px 0px !important;
+    font-size: 18px !important;
+}
+#closeBtn {
+    min-width: 14px !important;
+    width: 14px !important;
+}
+
+.ant-input-group-wrapper-outlined {
+    padding-left: 0px !important;
+}
+
+.ant-input-outlined {
+    height: 46px;
+    border-radius: 20px;
+    font-size: 18px;
+}
+
+.ant-input-group-addon {
+    border-radius: 0px 20px 20px 0px !important;
+}
+
+#promoIn {
+    border-radius: 20px 0px 0px 20px !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+@media screen and (max-width: 640px) {
+    .ant-select-selector {
+        border-radius: 10px !important;
+    }   
+    .react-international-phone-country-selector-button {
+        height: 37px;
+        padding: 8px;
+        border-radius: 10px 0px 0px 10px !important;
+    }
+    .react-international-phone-input {
+        height: 37px !important;
+        border-radius: 0px 10px 10px 0px !important;
+        font-size: 16px !important;
+    }
+    .ant-input-outlined {
+        height: 37px;
+        border-radius: 10px !important;
+        font-size: 16px;
+    }
+    
+    .ant-input-group-addon {
+        border-radius: 0px 10px 10px 0px;
+    }
+
+    #promoIn {
+        border-radius: 10px 0px 0px 10px !important;
+    }
+}
