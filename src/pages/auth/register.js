@@ -1,11 +1,19 @@
 /** @format */
 import { useState } from "react";
 import { AnimatedTabs, Fast, Social } from "./components/index";
+import { useDispatch } from "react-redux";
+import { signUp } from "../../redux/slices/authSlice";
 
 function Register() {
+  const dispatch = useDispatch();
+  // const loading = useSelector((state) => state.auth.loading);
+
   const [compStatus, SetCompStatus] = useState("social");
   const CompStatus = (value) => {
     SetCompStatus(value);
+  };
+  const getData = (value) => {
+    dispatch(signUp(value));
   };
   return (
     <div className="xl:relative h-screen">
@@ -18,7 +26,13 @@ function Register() {
             </div>
             <div>
               <AnimatedTabs sendData={CompStatus} />
-              <div>{compStatus === "social" ? <Social /> : <Fast />}</div>
+              <div>
+                {compStatus === "social" ? (
+                  <Social toSignup={getData} />
+                ) : (
+                  <Fast />
+                )}
+              </div>
             </div>
           </div>
         </div>

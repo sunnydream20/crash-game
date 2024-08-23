@@ -8,6 +8,7 @@ import ltcSvg from "../assets/ltc.svg";
 import tethSvg from "../assets/teth.svg";
 import tronSvg from "../assets/tron.svg";
 import rubSvg from "../assets/rub.svg";
+import { useState } from "react";
 
 const source = [
   {
@@ -935,9 +936,15 @@ const source = [
 ];
 
 export const CurrencySelector = ({ sendValue }) => {
+  const [currency, setCurrency] = useState("rub");
+  const handleChange = (value) => {
+    setCurrency(value); // Update the state with the selected currency
+    sendValue(value);
+  };
   return (
     <Select
-      defaultValue="rub"
+      value={currency} // Use 'value' instead of 'defaultValue' for controlled component
+      onChange={handleChange}
       className="sm:h-[37px] sm:rounded-[10px] xl:h-[52px] xl:rounded-[20px]"
       style={{ width: "100%" }}
       options={source}
