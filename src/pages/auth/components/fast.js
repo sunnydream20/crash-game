@@ -117,19 +117,20 @@ export function Fast() {
         <Button
           style={{
             width: "100%",
-            backgroundColor: "#A1DABA",
+            backgroundColor: accept ? "#33cc33" : "#A1Daba", // strong
             //backgroundColor: "#73E0A3", // strong
             height: 44,
             color: "white",
             fontSize: 24,
           }}
+          disabled={!accept}
         >
           Зарегистрироваться
         </Button>
       </div>
       <div className="mt-[10px] text-[16px] text-center">
         <span style={{ color: "#8D8D8D" }}>Уже есть аккаунт?</span>
-        <Link style={{ color: "#0474E4" }} to="/">
+        <Link style={{ color: "#0474E4" }} to="/auth/signin">
           Войти
         </Link>
       </div>
