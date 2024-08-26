@@ -55,7 +55,7 @@ export const Social = ({ toSignup }) => {
       phone,
       currency,
     };
-    console.log(phone);
+    console.log("in front comp+++++++++++", error);
     toSignup(data);
   };
   return (
@@ -81,7 +81,7 @@ export const Social = ({ toSignup }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        {error && error.email}
+        {error && error?.email}
       </div>
       <div className="mt-[20px]">
         <Input
@@ -101,7 +101,7 @@ export const Social = ({ toSignup }) => {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="парольа"
         />
-        {error && error.password}
+        {error && error?.password}
       </div>
       {promo === 0 ? (
         <div>
@@ -158,6 +158,7 @@ export const Social = ({ toSignup }) => {
         >
           Зарегистрироваться
         </Button>
+        {error ? error.message : ""}
       </div>
       <div className="mt-[10px] text-[16px] text-center">
         <span style={{ color: "#8D8D8D" }}>Уже есть аккаунт?</span>

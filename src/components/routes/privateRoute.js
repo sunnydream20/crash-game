@@ -2,18 +2,15 @@
 
 // PrivateRoute.jsx
 import React from "react";
-import { Route, Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
+const PrivateRoute = ({ element, restricted }) => {
   const isAuthenticated = !!localStorage.getItem("token"); // Check if token exists
 
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        isAuthenticated ? <Component {...props} /> : <Redirect to="/signin" />
-      }
-    />
+  return !isAuthenticated ? (
+    <Navigate to="/auth/signin" /> // Redirect to signin if not authenticated
+  ) : (
+    element
   );
 };
 

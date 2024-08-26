@@ -62,12 +62,13 @@ const authSlice = createSlice({
       .addCase(signIn.rejected, (state, action) => {
         state.loading = false;
         if (action.payload && action.payload.message) {
-          state.error = action.payload.message;
+          const err = {};
+          err["message"] = action.payload.message;
+          state.error = err;
           return;
         }
         const errors = action.payload.errors;
         state.error = errors?.reduce((acc, errorObj) => {
-          console.log(errorObj.path);
           acc[errorObj.path] = errorObj["msg"];
           return acc;
         }, {});
@@ -83,9 +84,14 @@ const authSlice = createSlice({
       })
       .addCase(signUp.rejected, (state, action) => {
         state.loading = false;
+        if (action.payload && action.payload.message) {
+          const err = {};
+          err["message"] = action.payload.message;
+          state.error = err;
+          return;
+        }
         const errors = action.payload.errors;
         state.error = errors?.reduce((acc, errorObj) => {
-          console.log(errorObj.path);
           acc[errorObj.path] = errorObj["msg"];
           return acc;
         }, {});

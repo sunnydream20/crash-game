@@ -6,8 +6,17 @@ import vectorSvg from "../assets/tv3_vector.svg";
 import dotsSvg from "../assets/tv3_dots.svg";
 import flyingSvg from "../assets/flying1.png";
 import graph from "../assets/tv3_graph.svg";
+
+// import loading component
+import Loading from "../components/loading/loading";
+
 //
 import "./auth/components/custom.css";
+import { Button } from "antd";
+
+import { io } from "socket.io-client";
+import { useState } from "react";
+const socket = io("http://localhost:8000");
 
 const btnArr = [
   { value: "XX.XXx", color: "#FF00FF" },
@@ -26,6 +35,36 @@ const btnArr = [
 ];
 
 function Crash() {
+  // crash number
+
+  const [crashNum, setCrashNum] = useState("1.00");
+  const [loading, setLoading] = useState(false);
+  const enterGame = () => {
+    // setLoading(true);
+    // setLoading(false);
+    if (socket) {
+      socket.emit("enterGame");
+      socket.on("enterSucess", () => {});
+      socket.on("loading", () => {
+        console.log("get loaidng message");
+        setLoading(true);
+      });
+      socket.on("crashingnumber", (crashingNum) => {
+        console.log(">>>>>>>>>>", crashingNum);
+        setLoading(false);
+        setCrashNum(crashingNum.toString());
+      });
+    }
+  };
+
+  const leaveGame = () => {
+    if (socket) {
+      socket.emit("leaveGame");
+      socket.on("leaveSucess", () => alert("You leave game sucessfully!"));
+    }
+  };
+
+  console.log(loading);
   return (
     <div className="xl:relative xl:w-full xl:h-screen bg-[#005ec0]">
       <div className="xl:absolute xl:w-[858px] h-screen mx-auto xl:top-1/2 xl:left-1/2 xl:transform xl:-translate-x-1/2 xl:-translate-y-1/2 xl:w-[1280px] xl:h-[720px] sm:flex sm:flex-col sm:justify-center">
@@ -66,8 +105,9 @@ function Crash() {
             </div>
           </div>
           <div className="pl-[15px] flex-1 flex items-center sm:w-[320px] sm:mx-auto overflow-auto">
-            {btnArr.map((val) => (
+            {btnArr.map((val, index) => (
               <button
+                key={index}
                 className="h-[33px] rounded-[4px] mr-[6px] p-[4px]"
                 style={{
                   backgroundColor: val.color,
@@ -80,8 +120,9 @@ function Crash() {
         </div>
         <div className="xl:h-[450px] xl:bg-[url('assets/tv3_landing2.png')] xl:bg-cover sm:h-[400px] sm:bg-[url('assets/tv3_landing2.png')] sm:bg-cover sm:flex sm:flex-col sm:justify-end">
           <div className="flex">
+            {loading ? <Loading /> : ""}
             <p className="xl:pt-[60px] xl:pl-[75px] xl:text-[70px] xl:text-white sm:pt-[20px] sm:pl-[25px] sm:text-[30px] sm:text-white">
-              xXX.XXX
+              {crashNum}
             </p>
             <img
               className="xl:w-[250px] xl:h-[160px] sm:w-[177px] sm:h-[105px]"
@@ -147,7 +188,7 @@ function Crash() {
               </div>
             </div>
           </div>
-          <div className="xl:w-[400px] sm:w-[98%] xl:h-[118px]  bg-white xl:rounded-[8px] sm:mb-[10px] sm:rounded-[6px]">
+          {/* <div className="xl:w-[400px] sm:w-[98%] xl:h-[118px]  bg-white xl:rounded-[8px] sm:mb-[10px] sm:rounded-[6px]">
             <div className="xl:h-[40px] bg-white xl:rounded-[8px] xl:p-[8px] sm:rounded-[8px] sm:p-[8px] flex justify-between">
               <div className="flex justify-center items-center">
                 <button className="w-[16px] h-[17px] bg-white border-2 border-[#008ED9]"></button>
@@ -198,6 +239,19 @@ function Crash() {
                 </div>
               </div>
             </div>
+          </div> */}
+          <div className="xl:w-[400px] sm:w-[98%] sm:p-[10px] xl:flex xl:justify-center xl:items-center text-center xl:h-[118px]  bg-white xl:rounded-[8px] sm:mb-[10px] sm:rounded-[6px]">
+            <Button
+              onClick={enterGame}
+              className="p-[20px] mr-[30px] text-[20px]"
+              type="primary"
+            >
+              Enter Game
+            </Button>
+
+            <Button onClick={leaveGame} className="p-[20px] text-[20px]">
+              Leave Game
+            </Button>
           </div>
         </div>
       </div>
