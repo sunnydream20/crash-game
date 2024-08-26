@@ -131,7 +131,11 @@ function Replacement() {
           <div className="sm:flex sm:p-[6px] sm:flex-wrap sm:w-[220px] sm:mx-auto sm:justify-between xl:mt-[18px] xl:flex flex-wrap justify-between">
             {coinArr.map((val) => (
               <div className="sm:mb-[8px] sm:p-[8px] w-[48%] xl:h-[80px] bg-[#EEf1f8] rounded-[10px] xl:pt-[7px] xl:pl-[17px] xl:mb-[12px] sm:flex sm:justify-between sm:align-center">
-                <img className="xl:w-[33px] sm:w-[16px]" src={val.src} />
+                <img
+                  className="xl:w-[33px] sm:w-[16px]"
+                  src={val.src}
+                  alt="...loading"
+                />
                 <p className="xl:mt-[8px] sm:text-[14px] xl:text-[18px]">
                   {val.value}
                 </p>

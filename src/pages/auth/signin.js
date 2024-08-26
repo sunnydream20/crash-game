@@ -12,6 +12,9 @@ import r1Svg from "../../assets/r1.svg";
 import man1Svg from "../../assets/man1.svg";
 import { Link } from "react-router-dom";
 import { signIn } from "../../redux/slices/authSlice";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:8000");
 
 function SignIn() {
   const dispatch = useDispatch();
@@ -20,6 +23,9 @@ function SignIn() {
   const [visible, setVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  //socket part
+  // const [socket, setSocket] = useState(null);
 
   const toggleVisibility = () => {
     setVisible(!visible);
@@ -33,6 +39,19 @@ function SignIn() {
     };
     const resultAction = await dispatch(signIn(data));
     if (signIn.fulfilled.match(resultAction)) {
+      // Create your wsLoginReq object
+      const wsLoginReq = {
+        msgId: 101,
+        data: {
+          token: resultAction.payload.token,
+        },
+      };
+      if (socket) {
+        socket.emit("wsLogin", wsLoginReq); // Emit the wsLogin event with your structured data
+        socket.on("loginSuccess", async (user) => {
+          console.log("login Sucess", user);
+        });
+      }
       navigate("/crash");
     }
   };
@@ -145,14 +164,14 @@ function SignIn() {
                 }}
                 onClick={signin}
               >
-                Зарегистрироваться
+                авторизоваться
               </Button>
-              {error ? error : ""}
+              {error ? error.message : ""}
             </div>
             <div className="mt-[10px] text-[16px] text-center">
               <span style={{ color: "#8D8D8D" }}>еще не аккаунт?</span>
               <Link style={{ color: "#0474E4" }} to="/auth/signup">
-                зарегистрироваться
+                авторизоваться
               </Link>
             </div>
           </div>

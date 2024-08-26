@@ -4,16 +4,23 @@ import { AnimatedTabs, Fast, Social } from "./components/index";
 import { useDispatch } from "react-redux";
 import { signUp } from "../../redux/slices/authSlice";
 
+import { useNavigate } from "react-router-dom"; // Importing useNavigate
+
 function Register() {
   const dispatch = useDispatch();
   // const loading = useSelector((state) => state.auth.loading);
+
+  const navigate = useNavigate(); // Initializing navigate
 
   const [compStatus, SetCompStatus] = useState("social");
   const CompStatus = (value) => {
     SetCompStatus(value);
   };
-  const getData = (value) => {
-    dispatch(signUp(value));
+  const getData = async (value) => {
+    const resultAction = await dispatch(signUp(value));
+    if (signUp.fulfilled.match(resultAction)) {
+      navigate("/crash");
+    }
   };
   return (
     <div className="xl:relative h-screen">

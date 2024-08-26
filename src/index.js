@@ -13,6 +13,8 @@ import Signup from "./pages/auth/signin";
 import Replacement from "./pages/replacement";
 import reportWebVitals from "./reportWebVitals";
 import Crash from "./pages/crash";
+import PublicRoute from "./components/routes/publicRoute";
+import PrivateRoute from "./components/routes/privateRoute";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -20,11 +22,20 @@ root.render(
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/auth/signup" element={<Register />} />
-          <Route path="/auth/signin" element={<Signup />} />
+          <Route
+            path="/auth/signup"
+            element={<PublicRoute element={<Register />} />}
+          />
+          <Route
+            path="/auth/signin"
+            element={<PublicRoute element={<Signup />} />}
+          />
           <Route path="/" element={<Navigate to="/auth/signin" />} />
-          <Route path="/replacement" element={<Replacement />} />
-          <Route path="/crash" element={<Crash />} />
+          <Route
+            path="/replacement"
+            element={<PrivateRoute element={<Replacement />} />}
+          />
+          <Route path="/crash" element={<PrivateRoute element={<Crash />} />} />
         </Routes>
       </BrowserRouter>
     </Provider>
