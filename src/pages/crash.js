@@ -6,18 +6,25 @@ import vectorSvg from "../assets/tv3_vector.svg";
 import dotsSvg from "../assets/tv3_dots.svg";
 import flyingSvg from "../assets/flying1.png";
 import graph from "../assets/tv3_graph.svg";
+import { useNavigate } from "react-router-dom"; // Importing useNavigate
 
 // import loading component
 import Loading from "../components/loading/loading";
 
 //
 import "./auth/components/custom.css";
-import { Button } from "antd";
 
 import { io } from "socket.io-client";
-import { useState } from "react";
-const socket = io("http://localhost:8000");
+import { useEffect, useState } from "react";
+const useSocket = () => {
+  const socket = io("http://localhost:8000");
 
+  const disconnectSocket = () => {
+    socket.disconnect();
+  };
+
+  return { socket, disconnectSocket };
+};
 const btnArr = [
   { value: "XX.XXx", color: "#FF00FF" },
   { value: "XX.XXx", color: "#FFB500" },
@@ -36,35 +43,91 @@ const btnArr = [
 
 function Crash() {
   // crash number
+  const navigate = useNavigate(); // Initializing navigate
+  const { socket, disconnectSocket } = useSocket();
 
+  // button status
+  const [btnName, setBtnName] = useState("Bet");
   const [crashNum, setCrashNum] = useState("1.00");
   const [loading, setLoading] = useState(false);
+
+  // crashing number and amount
+  const [crashNumber, setCrashNumber] = useState(1);
+  const [crashAmount, setCrashAmount] = useState(0);
+
+  // crash button status
+  const [crashStatus, setCrashStatus] = useState(false);
+
+  // crashed result
+  const [crashed, setCrashed] = useState("0");
+
   const enterGame = () => {
-    // setLoading(true);
-    // setLoading(false);
     if (socket) {
       socket.emit("enterGame");
       socket.on("enterSucess", () => {});
       socket.on("loading", () => {
-        console.log("get loaidng message");
+        setBtnName("Bet");
+        setCrashStatus(false);
         setLoading(true);
       });
       socket.on("crashingnumber", (crashingNum) => {
-        console.log(">>>>>>>>>>", crashingNum);
         setLoading(false);
+        setBtnName("Crash");
         setCrashNum(crashingNum.toString());
       });
     }
   };
 
   const leaveGame = () => {
-    if (socket) {
-      socket.emit("leaveGame");
-      socket.on("leaveSucess", () => alert("You leave game sucessfully!"));
+    socket.emit("leaveGame");
+    socket.on("leaveSucess", () => {
+      localStorage.removeItem("token");
+      disconnectSocket();
+      navigate("/auth/signin");
+    });
+  };
+  useEffect(() => {
+    enterGame();
+
+    return () => {
+      // Remove any listeners
+      socket.off("enterSucess");
+      socket.off("loading");
+      socket.off("crashingnumber");
+      socket.off("leaveSucess"); // Clean up leave event
+    };
+  }, []);
+
+  const betAction = () => {
+    switch (btnName) {
+      case "Bet":
+        if (socket) {
+          let data = {
+            crashAmount,
+            crashNumber,
+          };
+          socket.emit("bet", data);
+          socket.on("result", (res) => {
+            setCrashed(res.resultAmount.toFixed(2).toString());
+          });
+        }
+        break;
+      case "Crash":
+        if (socket) {
+          let data = {
+            crashAmount,
+            crashNumber,
+          };
+          socket.emit("crash", data);
+          socket.on("crashingRes", (winning) => {
+            setCrashStatus(true);
+            setCrashed(winning.toFixed(2).toString());
+          });
+        }
+        break;
     }
   };
 
-  console.log(loading);
   return (
     <div className="xl:relative xl:w-full xl:h-screen bg-[#005ec0]">
       <div className="xl:absolute xl:w-[858px] h-screen mx-auto xl:top-1/2 xl:left-1/2 xl:transform xl:-translate-x-1/2 xl:-translate-y-1/2 xl:w-[1280px] xl:h-[720px] sm:flex sm:flex-col sm:justify-center">
@@ -100,7 +163,7 @@ function Crash() {
                 alt="...loading"
               />
               <div className="w-[30px] h-[30px] p-[4px] bg-[#0082FF] rounded-[4px]">
-                <img src={dotsSvg} alt="...laoding" />
+                <img onClick={leaveGame} src={dotsSvg} alt="...laoding" />
               </div>
             </div>
           </div>
@@ -121,7 +184,7 @@ function Crash() {
         <div className="xl:h-[450px] xl:bg-[url('assets/tv3_landing2.png')] xl:bg-cover sm:h-[400px] sm:bg-[url('assets/tv3_landing2.png')] sm:bg-cover sm:flex sm:flex-col sm:justify-end">
           <div className="flex">
             {loading ? <Loading /> : ""}
-            <p className="xl:pt-[60px] xl:pl-[75px] xl:text-[70px] xl:text-white sm:pt-[20px] sm:pl-[25px] sm:text-[30px] sm:text-white">
+            <p className="xl:pt-[60px] xl:w-[250px] sm:w-[100px] xl:pl-[75px] xl:text-[70px] xl:text-white sm:pt-[20px] sm:pl-[25px] sm:text-[30px] sm:text-white">
               {crashNum}
             </p>
             <img
@@ -141,7 +204,7 @@ function Crash() {
               <div className="flex justify-center items-center">
                 <button className="w-[16px] h-[17px] bg-white border-2 border-[#008ED9]"></button>
                 <p className="text-[#008ED9] text-[14px] mx-[4px]">
-                  Автоставка
+                  winning: {crashed}
                 </p>
                 <button className="w-[16px] h-[17px] bg-white border-2 border-[#008ED9]"></button>
               </div>
@@ -157,8 +220,13 @@ function Crash() {
                   </button>
                   <div className="w-[100px] flex justify-start">
                     <input
+                      value={crashAmount}
+                      onChange={(e) => {
+                        setCrashAmount(e.target.value);
+                      }}
                       type="number"
                       className="w-[80px] text-right text-[18px]"
+                      disabled={!loading ? true : false}
                     />
                     <span className="text-[18px]">$</span>
                   </div>
@@ -167,91 +235,54 @@ function Crash() {
                   </button>
                 </div>
                 <div className="flex justify-between pt-[4px]">
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +50
+                  <button className="bg-[#00A3F0] w-[22px] h-[25px] text-white text-[16px]">
+                    -
                   </button>
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +100
-                  </button>
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +150
-                  </button>
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +200
+                  <div className="w-[100px] flex justify-start">
+                    <input
+                      value={crashNumber}
+                      onChange={(e) => {
+                        setCrashNumber(e.target.value);
+                      }}
+                      type="number"
+                      className="w-[80px] text-right text-[18px]"
+                      disabled={!loading ? true : false}
+                    />
+                    <span className="text-[18px]">X</span>
+                  </div>
+                  <button className="bg-[#00A3F0] w-[22px] h-[25px] text-white text-[16px]">
+                    +
                   </button>
                 </div>
               </div>
               <div className="bg-white rounded-[6px] xl:w-[190px] p-[6px]">
-                <div className="w-full h-[54px] bg-gradient-to-r from-[#00CCF3] to-[#0090EE] rounded-[6px] text-white text-[36px] text-center">
-                  ставка
-                </div>
+                <button
+                  onClick={betAction}
+                  disabled={crashStatus}
+                  className="xl:w-full h-[100%] bg-gradient-to-r from-[#00CCF3] to-[#0090EE] rounded-[6px] text-white text-[36px] sm:w-[100px] sm:text-[18px] text-center"
+                >
+                  {btnName}
+                </button>
               </div>
             </div>
           </div>
-          {/* <div className="xl:w-[400px] sm:w-[98%] xl:h-[118px]  bg-white xl:rounded-[8px] sm:mb-[10px] sm:rounded-[6px]">
+          <div className="xl:w-[400px] sm:hidden sm:w-[98%] xl:h-[118px]  bg-white xl:rounded-[8px] sm:mb-[10px] sm:rounded-[6px]">
             <div className="xl:h-[40px] bg-white xl:rounded-[8px] xl:p-[8px] sm:rounded-[8px] sm:p-[8px] flex justify-between">
-              <div className="flex justify-center items-center">
-                <button className="w-[16px] h-[17px] bg-white border-2 border-[#008ED9]"></button>
-                <p className="text-[#008ED9] text-[14px] mx-[4px]">
-                  Автоставка
-                </p>
-                <button className="w-[16px] h-[17px] bg-white border-2 border-[#008ED9]"></button>
-              </div>
+              <p className="text-[#008ED9] text-[14px] mx-[4px]">Winning:</p>
               <button className="bg-[#008ED9] w-[100px] h-[25px] text-white rounded-[4px]">
                 * 2.00
               </button>
             </div>
             <div className="xl:h-[78px] xl:rounded-[8px] sm:rounded-[6px] bg-gradient-to-r from-[#0090EE] to-[#00CCF3] p-[6px] flex justify-between">
-              <div className="bg-white rounded-[6px] xl:w-[190px] p-[6px]">
-                <div className="flex justify-between border-b-2 border-[#00A3F0]">
-                  <button className="bg-[#00A3F0] w-[22px] h-[25px] text-white text-[16px]">
-                    -
-                  </button>
-                  <div className="w-[100px] flex justify-start">
-                    <input
-                      type="number"
-                      className="w-[80px] text-right text-[18px]"
-                    />
-                    <span className="text-[18px]">$</span>
-                  </div>
-                  <button className="bg-[#00A3F0] w-[22px] h-[25px] text-white text-[16px]">
-                    +
-                  </button>
-                </div>
-                <div className="flex justify-between pt-[4px]">
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +50
-                  </button>
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +100
-                  </button>
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +150
-                  </button>
-                  <button className="text-white text-[14px] rounded-[2px] h-[20px] px-[4px] mr-[4px] bg-[#00A3F0]">
-                    +200
-                  </button>
-                </div>
+              <div className="xl:flex xl:justify-center xl:items-center bg-white rounded-[6px] xl:w-[190px] p-[6px]">
+                <p>Winning</p>
               </div>
               <div className="bg-white rounded-[6px] xl:w-[190px] p-[6px]">
                 <div className="w-full h-[54px] bg-gradient-to-r from-[#00CCF3] to-[#0090EE] rounded-[6px] text-white text-[36px] text-center">
-                  ставка
+                  {crashed}
                 </div>
               </div>
             </div>
-          </div> */}
-          <div className="xl:w-[400px] sm:w-[98%] sm:p-[10px] xl:flex xl:justify-center xl:items-center text-center xl:h-[118px]  bg-white xl:rounded-[8px] sm:mb-[10px] sm:rounded-[6px]">
-            <Button
-              onClick={enterGame}
-              className="p-[20px] mr-[30px] text-[20px]"
-              type="primary"
-            >
-              Enter Game
-            </Button>
-
-            <Button onClick={leaveGame} className="p-[20px] text-[20px]">
-              Leave Game
-            </Button>
           </div>
         </div>
       </div>
